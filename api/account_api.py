@@ -323,7 +323,8 @@ class AccountAPI:
         wallet : str
             The wallet address to query transactions for.
         coin_name : bool, optional
-            Flag to include coin names in response (default=False).
+            Flag to include coin names in response
+            (default=False).
 
         Returns
         -------
