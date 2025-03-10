@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 from moralis import evm_api
-from custom_exceptions.invalid_arguments import InvalidArgumentError
+from custom_exceptions import InvalidArgumentError
 from utils import create_logger
 
 class MoralisAPI:

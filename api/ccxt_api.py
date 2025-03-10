@@ -7,6 +7,7 @@ import ccxt
 from tqdm import tqdm
 
 from utils import interval_to_milliseconds, KlineTimes
+from custom_exceptions import InvalidArgumentError
 
 class CcxtAPI:
     """
@@ -294,6 +295,9 @@ class CcxtAPI:
         pd.DataFrame
             Returns a pandas DataFrame containing OHLCV data.
         """
+        if not self.klines_list:
+            raise ValueError("No K-line data to convert")
+
         ohlcv_columns = ["open", "high", "low", "close", "volume"]
 
         self.data_frame = pd.DataFrame(
