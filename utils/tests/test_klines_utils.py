@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from api.kline_utils import KlineTimes, get_max_interval
+from utils import KlineTimes, get_max_interval
 
 
 class TestKlineTimesIntervalAdjusted(unittest.TestCase):

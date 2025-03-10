@@ -1,8 +1,8 @@
 from math import ceil
 import time
 import numpy as np
-from utils import interval_to_milliseconds
-from custom_exceptions.invalid_arguments import InvalidArgumentError
+from utils.time_utils import interval_to_milliseconds
+from custom_exceptions import InvalidArgumentError
 
 class KlineTimes:
     """
