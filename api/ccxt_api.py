@@ -6,9 +6,7 @@ import pandas as pd
 import ccxt
 from tqdm import tqdm
 
-from utils import interval_to_milliseconds
-from api.kline_utils import KlineTimes
-from custom_exceptions.invalid_arguments import InvalidArgumentError
+from utils import interval_to_milliseconds, KlineTimes
 
 class CcxtAPI:
     """

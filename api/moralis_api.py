@@ -5,7 +5,7 @@ import numpy as np
 
 from moralis import evm_api
 from custom_exceptions.invalid_arguments import InvalidArgumentError
-from utils.log_handler import create_logger
+from utils import create_logger
 
 class MoralisAPI:
     """

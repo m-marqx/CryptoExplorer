@@ -9,7 +9,7 @@ Functions:
 milliseconds.
 """
 
-from custom_exceptions.invalid_arguments import InvalidArgumentError
+from custom_exceptions import InvalidArgumentError
 
 
 def interval_to_milliseconds(interval: str) -> int:

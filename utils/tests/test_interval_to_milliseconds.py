@@ -1,5 +1,5 @@
 import unittest
-from utils.time_utils import interval_to_milliseconds
+from utils import interval_to_milliseconds
 from custom_exceptions.invalid_arguments import InvalidArgumentError
 
 class TestIntervalToMilliseconds(unittest.TestCase):
