@@ -388,7 +388,7 @@ class MoralisAPI:
 
         return pd.Series(result)
 
-    def get_wallet_token_balances(
+    def fetch_wallet_token_balances(
             self, 
             wallet_address: str, 
             block_number: int,
@@ -423,6 +423,14 @@ class MoralisAPI:
             params=params,
         )
 
+        return result
+
+    def get_wallet_token_balances(
+        self,
+        wallet_address: str,
+        block_number: int,
+    ) -> pd.DataFrame:
+        result = self.fetch_wallet_token_balances(wallet_address, block_number)
         result_df = pd.DataFrame(result).dropna(subset="security_score")
 
         result_df["token_balance"] = (
@@ -435,7 +443,7 @@ class MoralisAPI:
             .set_index("symbol")
         )
 
-        inline_result.columns = [str(params["to_block"])]
+        inline_result.columns = [str(block_number)]
         return inline_result
 
     def get_wallet_token_balances_history(
