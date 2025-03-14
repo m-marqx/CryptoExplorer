@@ -74,7 +74,10 @@ class MoralisAPI:
         ValueError
             If the data has less than 2 elements.
         """
-        if len(data) == 2:
+        if isinstance(data, (np.ndarray, pd.Series)):
+            data = data.tolist()
+
+        if len(data) == 2 and isinstance(data, list):
             return data
 
         if len(data) > 2:
