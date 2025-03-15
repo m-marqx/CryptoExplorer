@@ -2,7 +2,7 @@ import logging
 import json
 import time
 import requests
-from custom_exceptions import ApiError
+from src.crypto_explorer.custom_exceptions import ApiError
 
 
 class QuickNodeAPI:

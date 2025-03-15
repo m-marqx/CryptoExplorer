@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 
 from moralis import evm_api
-from custom_exceptions import InvalidArgumentError
-from utils import create_logger
+from src.crypto_explorer.custom_exceptions import InvalidArgumentError
+from src.crypto_explorer.utils import create_logger
 
 class MoralisAPI:
     """
@@ -55,6 +55,7 @@ class MoralisAPI:
         self.chain = chain
         self.logger = create_logger("moralis_api", verbose)
 
+    # Testado
     def process_transaction_data(self, data: list) -> list:
         """
         Processes transaction data for a given transaction.
@@ -102,52 +103,53 @@ class MoralisAPI:
 
         raise ValueError("data has less than 2 elements")
 
-    def get_transactions(
+    # Moralis API
+    def fetch_transactions(
         self,
         wallet: str,
         excluded_categories: list | None = None,
         **kwargs,
     ) -> list:
         """
-        Retrieves transaction history for the specified wallet address 
-        while filtering out transactions that are marked as spam or 
+        Retrieves transaction history for the specified wallet address
+        while filtering out transactions that are marked as spam or
         belong to any of the excluded categories.
 
         Parameters
         ----------
         wallet : str
-            The wallet address for which to retrieve the transaction 
+            The wallet address for which to retrieve the transaction
             history.
         excluded_categories : list or None, optional
-            A list of transaction categories to exclude. If None, a 
+            A list of transaction categories to exclude. If None, a
             default list of categories including "contract interaction",
             "token receive", "airdrop", "receive", "approve", and "send"
             will be used.
         **kwargs : dict
-            Additional keyword arguments to filter transactions, such 
+            Additional keyword arguments to filter transactions, such
             as:
                 - **from_block**: int
-                    The minimum block number to start retrieving 
+                    The minimum block number to start retrieving
                     transactions.
                 - **to_block**: int
-                    The maximum block number to stop retrieving 
+                    The maximum block number to stop retrieving
                     transactions.
                 - **from_date**: str
-                    The start date 
+                    The start date
                     (in seconds or a momentjs-compatible datestring).
                 - **to_date**: str
-                    The end date 
+                    The end date
                     (in seconds or a momentjs-compatible datestring).
                 - **include_internal_transactions**: bool
-                    Whether to include internal transactions in the 
+                    Whether to include internal transactions in the
                     results.
                 - **nft_metadata**: bool
                     Whether to include NFT metadata in the results.
                 - **cursor**: str
-                    A pagination cursor returned from previous 
+                    A pagination cursor returned from previous
                     responses.
                 - **order**: str
-                    The order of transactions, either "ASC" for 
+                    The order of transactions, either "ASC" for
                     ascending or "DESC" for descending.
                 - **limit**: int
                     The maximum number of transactions to retrieve.
@@ -165,9 +167,9 @@ class MoralisAPI:
         self.logger.info("Retrieving transactions for wallet: %s", wallet)
 
         params = {**kwargs}
-        params['chain'] = kwargs.get('chain', self.chain)
-        params['address'] = kwargs.get('address', wallet)
-        params['order'] = kwargs.get('order', 'DESC')
+        params["chain"] = kwargs.get("chain", self.chain)
+        params["address"] = kwargs.get("address", wallet)
+        params["order"] = kwargs.get("order", "DESC")
 
         txn_infos = evm_api.wallets.get_wallet_history(
             api_key=self.api_key,
@@ -197,6 +199,103 @@ class MoralisAPI:
 
         return transactions
 
+    # Moralis API
+    def fetch_transactions(
+        self,
+        wallet: str,
+        excluded_categories: list | None = None,
+        **kwargs,
+    ) -> list:
+        """
+        Retrieves transaction history for the specified wallet address
+        while filtering out transactions that are marked as spam or
+        belong to any of the excluded categories.
+
+        Parameters
+        ----------
+        wallet : str
+            The wallet address for which to retrieve the transaction
+            history.
+        excluded_categories : list or None, optional
+            A list of transaction categories to exclude. If None, a
+            default list of categories including "contract interaction",
+            "token receive", "airdrop", "receive", "approve", and "send"
+            will be used.
+        **kwargs : dict
+            Additional keyword arguments to filter transactions, such
+            as:
+                - **from_block**: int
+                    The minimum block number to start retrieving
+                    transactions.
+                - **to_block**: int
+                    The maximum block number to stop retrieving
+                    transactions.
+                - **from_date**: str
+                    The start date
+                    (in seconds or a momentjs-compatible datestring).
+                - **to_date**: str
+                    The end date
+                    (in seconds or a momentjs-compatible datestring).
+                - **include_internal_transactions**: bool
+                    Whether to include internal transactions in the
+                    results.
+                - **nft_metadata**: bool
+                    Whether to include NFT metadata in the results.
+                - **cursor**: str
+                    A pagination cursor returned from previous
+                    responses.
+                - **order**: str
+                    The order of transactions, either "ASC" for
+                    ascending or "DESC" for descending.
+                - **limit**: int
+                    The maximum number of transactions to retrieve.
+
+        Returns
+        -------
+        list
+            A list of transaction dictionaries that have been filtered to exclude
+            spam and the specified categories.
+
+        Side Effects
+        ------------
+        Logs the start and completion of the transaction retrieval process.
+        """
+        self.logger.info("Retrieving transactions for wallet: %s", wallet)
+
+        params = {**kwargs}
+        params["chain"] = kwargs.get("chain", self.chain)
+        params["address"] = kwargs.get("address", wallet)
+        params["order"] = kwargs.get("order", "DESC")
+
+        txn_infos = evm_api.wallets.get_wallet_history(
+            api_key=self.api_key,
+            params=params,
+        )["result"]
+
+        transactions = []
+
+        if excluded_categories is None:
+            excluded_categories = [
+                "contract interaction",
+                "token receive",
+                "airdrop",
+                "receive",
+                "approve",
+                "send",
+            ]
+
+        for txn in txn_infos:
+            is_not_spam = not txn["possible_spam"]
+            in_excluded_categories = txn["category"] in excluded_categories
+
+            if is_not_spam and not in_excluded_categories:
+                transactions.append(txn)
+
+        self.logger.info("Retrieved %d transactions", len(transactions))
+
+        return transactions
+
+    # Testado
     def get_swaps(self, swaps: list, add_summary: bool = False) -> list:
         """
         Retrieves all swaps data for a given wallet address.
@@ -245,6 +344,7 @@ class MoralisAPI:
 
         return swaps_data
 
+    # Testado
     def get_account_swaps(
         self,
         wallet: str,
@@ -268,7 +368,7 @@ class MoralisAPI:
             A DataFrame containing details of all swaps for the given
             wallet address.
         """
-        swaps_list = self.get_transactions(wallet)
+        swaps_list = self.fetch_transactions(wallet)
         swaps_data = self.get_swaps(swaps_list, add_summary)
 
         swap_columns = ["token_symbol", "value_formatted"]
@@ -325,7 +425,8 @@ class MoralisAPI:
 
         return swaps_df
 
-    def get_token_price(
+    # Moralis API
+    def fetch_token_price(
         self,
         block_number: int,
         address: str = "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
@@ -358,9 +459,10 @@ class MoralisAPI:
             params=params,
         )
 
-        return pd.Series(result)
+        return result
 
-    def get_block(self, unix_date: int | str) -> pd.Series:
+    # Moralis API
+    def fetch_block(self, unix_date: int | str) -> pd.Series:
         """
         Retrieves block information corresponding to a given Unix 
         timestamp.
@@ -391,6 +493,7 @@ class MoralisAPI:
 
         return pd.Series(result)
 
+    # Moralis API
     def fetch_wallet_token_balances(
             self, 
             wallet_address: str, 
@@ -428,6 +531,7 @@ class MoralisAPI:
 
         return result
 
+    # Testado
     def get_wallet_token_balances(
         self,
         wallet_address: str,
@@ -449,6 +553,7 @@ class MoralisAPI:
         inline_result.columns = [str(block_number)]
         return inline_result
 
+    # Testado
     def get_wallet_token_balances_history(
         self, 
         wallet_address: str, 
@@ -509,7 +614,7 @@ class MoralisAPI:
             A DataFrame containing the token balances (transposed),
             USD price, and block timestamp for each evaluated block.
         """
-        transactions = self.get_transactions(wallet_address, **kwargs)
+        transactions = self.fetch_transactions(wallet_address, **kwargs)
 
         block_numbers = (
             pd.DataFrame(transactions)['block_number']
@@ -519,18 +624,18 @@ class MoralisAPI:
 
         token_balances = []
         time_now = int(time.time())
-        last_block = self.get_block(time_now)["block"]
+        last_block = self.fetch_block(time_now)["block"]
         updated_blocks = [*block_numbers, last_block]
 
         for block in updated_blocks:
             self.logger.info(f"Getting token balances for block {block}.")
 
             temp_df = self.get_wallet_token_balances(wallet_address, block).T
-            token_price = self.get_token_price(block, token_address)
+            token_price = self.fetch_token_price(block, token_address)
 
-            temp_df['usdPrice'] = token_price.loc['usdPrice']
+            temp_df['usdPrice'] = token_price['usdPrice']
             temp_df['blockTimestamp'] = pd.Timestamp(
-                int(token_price.loc['blockTimestamp']),
+                int(token_price['blockTimestamp']),
                 unit='ms',
             )
 

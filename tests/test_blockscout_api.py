@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
-from api.blockscout_api import BlockscoutAPI
+from src.crypto_explorer import BlockscoutAPI
 
 
 class TestBlockscoutAPI(unittest.TestCase):
@@ -37,6 +37,11 @@ class TestBlockscoutAPI(unittest.TestCase):
         }
 
         self.assertDictEqual(result, expected_result)
+
+    def test_get_transactions_not_str_txid(self):
+        with self.assertRaises(ValueError) as cm:
+            self.api.get_transactions(10, False)
+        self.assertEqual(str(cm.exception), "txid must be a string")
 
     @patch("requests.get")
     def test_get_transactions_coin_names(self, mock_get):

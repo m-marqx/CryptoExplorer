@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
-from api.moralis_api import MoralisAPI
-from api.blockscout_api import BlockscoutAPI
+from src.crypto_explorer.api.moralis_api import MoralisAPI
+from src.crypto_explorer.api.blockscout_api import BlockscoutAPI
 
 
 class APIHandler(ABC):

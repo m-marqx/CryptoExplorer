@@ -51,12 +51,12 @@ class BlockscoutAPI:
 
     def get_transactions(self, txid: str, coin_name: bool = False):
         """
-        Retrieves transaction details for a given transaction ID.
+        Retrieves transaction details for a given transaction hash.
 
         Parameters
         ----------
         txid : str
-            The transaction ID to retrieve details for.
+            The transaction hash to retrieve details for.
         coin_name : bool, optional
             If True, includes the coin names in the returned dictionary
             (default : False).
@@ -67,6 +67,9 @@ class BlockscoutAPI:
             A dictionary containing the transaction details, including
             coin totals and USD price.
         """
+        if not isinstance(txid, str):
+            raise ValueError("txid must be a string")
+
         url = f"{self.blockscout_api_url}/transactions/{txid}/token-transfers"
 
         response = requests.get(url, params={"type": "ERC-20"}, timeout=30)
