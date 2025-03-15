@@ -1,11 +1,12 @@
 import unittest
 from unittest.mock import patch
-from src.crypto_explorer.api import CcxtAPI
+
 import ccxt
 import pandas as pd
 from pandas import Timestamp, Timedelta
 import numpy as np
 
+from src.crypto_explorer import CcxtAPI
 
 class TestCcxtApi(unittest.TestCase):
     def setUp(self) -> None:

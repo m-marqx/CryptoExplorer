@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from src.crypto_explorer.api import QuickNodeAPI
+from src.crypto_explorer import QuickNodeAPI
 
 class TestQuickNodeAPI(unittest.TestCase):
     def setUp(self):

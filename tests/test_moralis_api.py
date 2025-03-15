@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock, Mock
-from src.crypto_explorer.api import MoralisAPI
+from src.crypto_explorer import MoralisAPI
 from src.crypto_explorer.custom_exceptions import ApiError
 import pandas as pd
 import numpy as np
@@ -426,6 +426,9 @@ class TestMoralisAPI(unittest.TestCase):
                 ],
             ),
         )
+        expected_result["blockTimestamp"] = expected_result[
+            "blockTimestamp"
+        ].astype("datetime64[ms]")
 
         expected_result.columns.name = "symbol"
 
