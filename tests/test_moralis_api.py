@@ -426,6 +426,9 @@ class TestMoralisAPI(unittest.TestCase):
                 ],
             ),
         )
+        expected_result["blockTimestamp"] = expected_result[
+            "blockTimestamp"
+        ].astype("datetime64[ms]")
 
         # Ensure the blockTimestamp column uses the same dtype as in the 
         # result, preventing potential dtype mismatch issues across 
