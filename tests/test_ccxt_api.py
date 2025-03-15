@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from api.ccxt_api import CcxtAPI
+from src.crypto_explorer.api import CcxtAPI
 import ccxt
 import pandas as pd
 from pandas import Timestamp, Timedelta
@@ -28,7 +28,7 @@ class TestCcxtApi(unittest.TestCase):
         ]
 
         mock_second_call = (
-            pd.read_parquet("api/tests/test_data/klines.parquet")
+            pd.read_parquet("tests/test_data/klines.parquet")
             .to_numpy()
             .tolist()
         )
@@ -41,7 +41,7 @@ class TestCcxtApi(unittest.TestCase):
             result = self.ccxt_api.get_all_klines(1502978400000).klines_list
             expected_result = (
                 pd.read_parquet(
-                    "api/tests/test_data/get_all_klines_results.parquet"
+                    "tests/test_data/get_all_klines_results.parquet"
                 )
                 .to_numpy()
                 .tolist()
@@ -49,13 +49,13 @@ class TestCcxtApi(unittest.TestCase):
             self.assertListEqual(result, expected_result)
 
     def test_to_OHLCV(self):
-        path = "api/tests/test_data/get_all_klines_results.parquet"
+        path = "tests/test_data/get_all_klines_results.parquet"
 
         self.ccxt_api.klines_list = pd.read_parquet(path).to_numpy().tolist()
 
         results = self.ccxt_api.to_OHLCV().data_frame
 
-        path_results = "api/tests/test_data/to_OHLCV_results.parquet"
+        path_results = "tests/test_data/to_OHLCV_results.parquet"
         expected_results = pd.read_parquet(path_results).reset_index()
         expected_results["date"] = expected_results["date"].astype(
             "datetime64[ms]"

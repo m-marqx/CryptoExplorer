@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from utils import KlineTimes, get_max_interval
+from src.crypto_explorer.utils import KlineTimes, get_max_interval
 
 
 class TestKlineTimesIntervalAdjusted(unittest.TestCase):
