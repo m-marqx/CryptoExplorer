@@ -14,7 +14,7 @@ class TestCcxtApi(unittest.TestCase):
         self.exchange = ccxt.binance()
 
     def test_get_since_value(self):
-        with patch.object(self.exchange, "fetch_ohlcv") as mock_fetch_ohlcv:
+        with patch.object(self.ccxt_api, "_fetch_klines") as mock_fetch_ohlcv:
             mock_fetch_ohlcv.return_value = [
                 [1502942400000, 4261.48, 4328.69, 4261.32, 4315.32, 70.415925]
             ]
