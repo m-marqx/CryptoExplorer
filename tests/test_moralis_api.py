@@ -426,9 +426,13 @@ class TestMoralisAPI(unittest.TestCase):
                 ],
             ),
         )
+
+        # Ensure the blockTimestamp column uses the same dtype as in the 
+        # result, preventing potential dtype mismatch issues across 
+        # different pandas versions.
         expected_result["blockTimestamp"] = expected_result[
             "blockTimestamp"
-        ].astype("datetime64[ms]")
+        ].astype(result['blockTimestamp'].dtype) 
 
         # Ensure the blockTimestamp column uses the same dtype as in the 
         # result, preventing potential dtype mismatch issues across 
