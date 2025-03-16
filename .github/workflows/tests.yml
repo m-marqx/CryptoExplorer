@@ -1,4 +1,4 @@
-name: run-unittest
+name: run unit tests
 on:
     push:
         branches:
@@ -7,7 +7,7 @@ on:
     workflow_call:
 
 jobs:
-    unittest:
+    unit-tests:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
