@@ -179,7 +179,7 @@ print(block_stats)
 
 ## Testes
 
-Todos os testes unitários estão dentro do diretório tests/ 
+Todos os testes unitários estão dentro do diretório `tests/`
 
 Para executar os testes, execute:
 

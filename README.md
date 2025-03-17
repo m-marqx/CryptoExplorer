@@ -1,3 +1,7 @@
+## PT-BR
+A versão traduzida deste README se encontra [aqui](https://github.com/m-marqx/CryptoExplorer/blob/main/README-ptbr.md)
+
+# CryptoExplorer
 ## Overview
 
 The CryptoExplorer repository offers a unified interface to query blockchain data, monitor trading activities, retrieve exchange price histories, and access Bitcoin network health metrics. Explore and extend the modules to suit your specific use-case.
@@ -184,7 +188,8 @@ print(block_stats)
 
 ## Tests
 
-Unit tests are provided in the tests/ directories within each module.
+All unit tests are inside the `tests/` directory
+
 
 To run the tests, execute:
 
