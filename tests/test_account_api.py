@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import patch, Mock
+import warnings
 
 import pandas as pd
 
-from src.crypto_explorer import MoralisAPI
 from src.crypto_explorer.api.account_api import MoralisHandler, BlockscoutHandler, AccountAPI
 
 class TestMoralisHandler(unittest.TestCase):
@@ -567,10 +567,12 @@ class TestAccountAPI(unittest.TestCase):
             mock_response_5,
         ]
 
-        result = self.account_api.get_wallet_swaps(
-            "0x1",
-            True,
-        )
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            result = self.account_api.get_wallet_swaps(
+                wallet="0x1",
+                coin_name=True,
+            )
 
         expected_result = pd.DataFrame([
             {
@@ -740,10 +742,12 @@ class TestAccountAPI(unittest.TestCase):
             mock_response_6,
         ]
 
-        result = self.account_api.get_wallet_swaps(
-            "0x1",
-            False,
-        )
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            result = self.account_api.get_wallet_swaps(
+                wallet="0x1",
+                coin_name=False,
+            )
 
         expected_result = pd.DataFrame([
             {
