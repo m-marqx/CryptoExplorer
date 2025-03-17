@@ -34,17 +34,17 @@ Example:
 ```py
 from crypto_explorer import AccountAPI
 
-api = AccountAPI(api_key="YOUR_MORALIS_API_KEY", verbose=True)
+account_api = AccountAPI(api_key="YOUR_MORALIS_API_KEY", verbose=True)
 wallet = "0xYourWalletAddress"
 
 # Retrieve all swap transactions with coin names
-swaps = api.get_wallet_swaps(wallet, coin_name=True)
+swaps = account_api.get_wallet_swaps(wallet, coin_name=True)
 
 # Retrieve buy transactions for asset "WBTC"
-buys = api.get_buys(wallet, asset_name="WBTC")
+buys = account_api.get_buys(wallet, asset_name="WBTC")
 
 # Retrieve sell transactions for asset "WBTC"
-sells = api.get_sells(wallet, asset_name="WBTC")
+sells = account_api.get_sells(wallet, asset_name="WBTC")
 
 ```
 
@@ -203,22 +203,14 @@ cd CryptoExplorer
 
 ```
 
-2. Set up a virtual environment:
-
-```bash
-python -m venv venv
-source venv/bin/activate  # For Windows: venv\Scripts\activate
-
-```
-
-3. Install dependencies:
+2. Install dependencies:
 
 ```sh
 pip install -r requirements.txt
 
 ```
 
-*Note*: Ensure you are using Python 3.11 or a compatible version.
+**Note**: Ensure you are using Python 3.10 or greater.
 
 ## Contributing
 
