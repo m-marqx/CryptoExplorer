@@ -194,8 +194,8 @@ All unit tests are inside the `tests/` directory
 To run the tests, execute:
 
 ```sh
-python -m pytest
-
+cd src
+python -m pytest ./tests
 ```
 
 ## Setup & Installation

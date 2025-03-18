@@ -184,7 +184,8 @@ Todos os testes unitários estão dentro do diretório `tests/`
 Para executar os testes, execute:
 
 ```sh
-python -m pytest
+cd src
+python -m pytest ./tests
 ```
 
 ## Configuração e Instalação
