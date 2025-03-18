@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock, Mock
-from src.crypto_explorer import MoralisAPI
-from src.crypto_explorer.custom_exceptions import ApiError
+from crypto_explorer import MoralisAPI
+from crypto_explorer.custom_exceptions import ApiError
 import pandas as pd
 import numpy as np
 import os
@@ -53,7 +53,7 @@ class TestMoralisAPI(unittest.TestCase):
 
         pd.testing.assert_frame_equal(result, expected_result)
 
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
     def test_get_account_swaps(self, mock_transactions):
         mock_transactions.return_value = self.aligned_transactions
 
@@ -69,7 +69,7 @@ class TestMoralisAPI(unittest.TestCase):
 
         pd.testing.assert_frame_equal(result, expected_result)
 
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
     def test_get_account_swaps_with_summary(self, mock_get):
         mock_transactions = MagicMock()
         mock_transactions.return_value = self.aligned_transactions
@@ -87,7 +87,7 @@ class TestMoralisAPI(unittest.TestCase):
 
         pd.testing.assert_frame_equal(result, expected_result)
 
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
     def test_get_account_swaps_with_coin_name(self, mock_get):
         mock_transactions = MagicMock()
         mock_transactions.return_value = self.aligned_transactions
@@ -105,7 +105,7 @@ class TestMoralisAPI(unittest.TestCase):
 
         pd.testing.assert_frame_equal(result, expected_result)
 
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
     def test_get_account_swaps_with_coin_name(self, mock_get):
         mock_transactions = MagicMock()
         mock_transactions.return_value = self.aligned_transactions
@@ -287,7 +287,7 @@ class TestMoralisAPI(unittest.TestCase):
         self.assertListEqual(result, expected_result)
 
     @patch(
-        "src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_wallet_token_balances"
+        "crypto_explorer.api.moralis_api.MoralisAPI.fetch_wallet_token_balances"
     )
     def test_get_wallet_token_balances(self, mock_balance):
         mock_balance.return_value = self.dummy_balances[0]
@@ -306,10 +306,10 @@ class TestMoralisAPI(unittest.TestCase):
 
         pd.testing.assert_frame_equal(result, expected_result)
 
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_wallet_token_balances")
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_block")
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_token_price")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_wallet_token_balances")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_block")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_token_price")
     def test_get_wallet_token_balances_history(
         self,
         mock_price,

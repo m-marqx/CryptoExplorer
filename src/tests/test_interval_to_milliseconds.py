@@ -1,6 +1,6 @@
 import unittest
-from src.crypto_explorer.utils import interval_to_milliseconds
-from src.crypto_explorer.custom_exceptions.invalid_arguments import InvalidArgumentError
+from crypto_explorer.utils import interval_to_milliseconds
+from crypto_explorer.custom_exceptions.invalid_arguments import InvalidArgumentError
 
 class TestIntervalToMilliseconds(unittest.TestCase):
     def test_valid_intervals(self):

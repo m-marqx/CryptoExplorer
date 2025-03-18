@@ -6,8 +6,8 @@ import pandas as pd
 import ccxt
 from tqdm import tqdm
 
-from src.crypto_explorer.utils import interval_to_milliseconds, KlineTimes
-from src.crypto_explorer.custom_exceptions import InvalidArgumentError
+from crypto_explorer.utils import interval_to_milliseconds, KlineTimes
+from crypto_explorer.custom_exceptions import InvalidArgumentError
 
 class CcxtAPI:
     """

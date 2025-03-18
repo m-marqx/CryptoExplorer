@@ -1,8 +1,8 @@
 from math import ceil
 import time
 import numpy as np
-from src.crypto_explorer.utils.time_utils import interval_to_milliseconds
-from src.crypto_explorer.custom_exceptions import InvalidArgumentError
+from crypto_explorer.utils.time_utils import interval_to_milliseconds
+from crypto_explorer.custom_exceptions import InvalidArgumentError
 
 class KlineTimes:
     """

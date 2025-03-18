@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 
 from moralis import evm_api
-from src.crypto_explorer.custom_exceptions import InvalidArgumentError
-from src.crypto_explorer.utils import create_logger
+from crypto_explorer.custom_exceptions import InvalidArgumentError
+from crypto_explorer.utils import create_logger
 
 class MoralisAPI:
     """
@@ -432,7 +432,7 @@ class MoralisAPI:
         address: str = "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
     ) -> pd.Series:
         """
-        Retrieves the token price at a specified block number using the 
+        Retrieves the token price at a specified block number using the
         Moralis API.
 
         Parameters
@@ -445,7 +445,7 @@ class MoralisAPI:
         Returns
         -------
         pandas.Series
-            A Series containing the token price data as returned by the 
+            A Series containing the token price data as returned by the
             Moralis API.
         """
         params = {
@@ -464,7 +464,7 @@ class MoralisAPI:
     # Moralis API
     def fetch_block(self, unix_date: int | str) -> pd.Series:
         """
-        Retrieves block information corresponding to a given Unix 
+        Retrieves block information corresponding to a given Unix
         timestamp.
 
         Parameters
@@ -495,8 +495,8 @@ class MoralisAPI:
 
     # Moralis API
     def fetch_wallet_token_balances(
-            self, 
-            wallet_address: str, 
+            self,
+            wallet_address: str,
             block_number: int,
         ) -> pd.DataFrame:
         """
@@ -541,7 +541,7 @@ class MoralisAPI:
         result_df = pd.DataFrame(result).dropna(subset="security_score")
 
         result_df["token_balance"] = (
-            result_df["balance"].astype("int64") 
+            result_df["balance"].astype("int64")
             / 10 ** result_df["decimals"].astype("int64")
         )
 
@@ -555,8 +555,8 @@ class MoralisAPI:
 
     # Testado
     def get_wallet_token_balances_history(
-        self, 
-        wallet_address: str, 
+        self,
+        wallet_address: str,
         token_address: str,
         **kwargs: dict,
     ) -> pd.DataFrame:

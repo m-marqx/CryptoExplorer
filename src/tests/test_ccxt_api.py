@@ -6,7 +6,7 @@ import pandas as pd
 from pandas import Timestamp, Timedelta
 import numpy as np
 
-from src.crypto_explorer import CcxtAPI
+from crypto_explorer import CcxtAPI
 
 class TestCcxtApi(unittest.TestCase):
     def setUp(self) -> None:

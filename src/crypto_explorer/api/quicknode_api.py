@@ -2,7 +2,7 @@ import logging
 import json
 import time
 import requests
-from src.crypto_explorer.custom_exceptions import ApiError
+from crypto_explorer.custom_exceptions import ApiError
 
 
 class QuickNodeAPI:
@@ -125,7 +125,7 @@ class QuickNodeAPI:
         Returns
         -------
         dict
-            Information about the Bitcoin blockchain from the Bitcoin 
+            Information about the Bitcoin blockchain from the Bitcoin
             RPC getblockchaininfo method.
 
         Raises

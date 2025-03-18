@@ -4,7 +4,11 @@ import warnings
 
 import pandas as pd
 
-from src.crypto_explorer.api.account_api import MoralisHandler, BlockscoutHandler, AccountAPI
+from crypto_explorer.api.account_api import (
+    MoralisHandler,
+    BlockscoutHandler,
+    AccountAPI,
+)
 
 class TestMoralisHandler(unittest.TestCase):
     def setUp(self):
@@ -25,7 +29,7 @@ class TestMoralisHandler(unittest.TestCase):
 
         self.dummy_balances = [list(x) for x in self.dummy_balances]
 
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
     def test_get_account_swaps(self, mock_transactions):
         mock_transactions.return_value = self.aligned_transactions
 
@@ -40,7 +44,7 @@ class TestMoralisHandler(unittest.TestCase):
 
         pd.testing.assert_frame_equal(result, expected_result)
 
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
     def test_get_account_swaps_with_coin_name(self, mock_get):
         mock_get.return_value = self.aligned_transactions
 
@@ -414,7 +418,7 @@ class TestAccountAPI(unittest.TestCase):
             for column in range(self.transactions.shape[0])
         ]
 
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
     def test_get_account_swaps_coin_names(self, mock_get):
         mock_get.return_value = self.aligned_transactions
 
@@ -429,7 +433,7 @@ class TestAccountAPI(unittest.TestCase):
 
         pd.testing.assert_frame_equal(result, expected_result)
 
-    @patch("src.crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
     def test_get_account_swaps_no_coin_names(self, mock_transactions):
         mock_transactions.return_value = self.aligned_transactions
 
@@ -784,7 +788,7 @@ class TestAccountAPI(unittest.TestCase):
 
         pd.testing.assert_frame_equal(result, expected_result)
 
-    @patch("src.crypto_explorer.api.account_api.AccountAPI.get_wallet_swaps")
+    @patch("crypto_explorer.api.account_api.AccountAPI.get_wallet_swaps")
     def test_get_buys(self, mock_get_wallet_swaps):
         mock_get_wallet_swaps.return_value = pd.read_parquet(
             "tests/test_data/account_swaps_expected_result_coin_name.parquet"
@@ -826,7 +830,7 @@ class TestAccountAPI(unittest.TestCase):
         result = self.account_api.get_buys(wallet_address="0x1", asset_name="WBTC")
         pd.testing.assert_frame_equal(result, expected_result)
 
-    @patch("src.crypto_explorer.api.account_api.AccountAPI.get_wallet_swaps")
+    @patch("crypto_explorer.api.account_api.AccountAPI.get_wallet_swaps")
     def test_get_sells(self, mock_get_wallet_swaps):
         mock_get_wallet_swaps.return_value = pd.read_parquet(
             "tests/test_data/account_swaps_expected_result_coin_name.parquet"

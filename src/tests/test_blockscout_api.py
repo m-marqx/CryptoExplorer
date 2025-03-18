@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
-from src.crypto_explorer import BlockscoutAPI
+from crypto_explorer import BlockscoutAPI
 
 
 class TestBlockscoutAPI(unittest.TestCase):

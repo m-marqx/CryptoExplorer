@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import requests
 import json
-from src.crypto_explorer import QuickNodeAPI
+from crypto_explorer import QuickNodeAPI
 
 
 class TestQuickNodeAPI(unittest.TestCase):
