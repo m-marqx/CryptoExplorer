@@ -614,18 +614,12 @@ class MoralisAPI:
             A DataFrame containing the token balances (transposed),
             USD price, and block timestamp for each evaluated block.
         """
-        transactions = self.fetch_transactions(wallet_address, **kwargs)
-
-        block_numbers = (
-            pd.DataFrame(transactions)['block_number']
-            .astype(int)
-            .tolist()
+        updated_blocks = self.get_wallet_blocks(
+            wallet_address=wallet_address,
+            **kwargs,
         )
 
         token_balances = []
-        time_now = int(time.time())
-        last_block = self.fetch_block(time_now)["block"]
-        updated_blocks = [*block_numbers, last_block]
 
         for block in updated_blocks:
             self.logger.info(f"Getting token balances for block {block}.")
