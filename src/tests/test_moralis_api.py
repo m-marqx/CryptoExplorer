@@ -106,7 +106,7 @@ class TestMoralisAPI(unittest.TestCase):
         pd.testing.assert_frame_equal(result, expected_result)
 
     @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
-    def test_get_account_swaps_with_coin_name(self, mock_get):
+    def test_get_account_swaps_with_coin_name_and_summary(self, mock_get):
         mock_transactions = MagicMock()
         mock_transactions.return_value = self.aligned_transactions
         mock_get.return_value = mock_transactions()
