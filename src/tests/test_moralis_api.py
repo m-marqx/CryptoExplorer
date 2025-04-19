@@ -427,15 +427,15 @@ class TestMoralisAPI(unittest.TestCase):
             ),
         )
 
-        # Ensure the blockTimestamp column uses the same dtype as in the 
-        # result, preventing potential dtype mismatch issues across 
+        # Ensure the blockTimestamp column uses the same dtype as in the
+        # result, preventing potential dtype mismatch issues across
         # different pandas versions.
         expected_result["blockTimestamp"] = expected_result[
             "blockTimestamp"
         ].astype(result['blockTimestamp'].dtype) 
 
-        # Ensure the blockTimestamp column uses the same dtype as in the 
-        # result, preventing potential dtype mismatch issues across 
+        # Ensure the blockTimestamp column uses the same dtype as in the
+        # result, preventing potential dtype mismatch issues across
         # different pandas versions.
         expected_result["blockTimestamp"] = expected_result[
             "blockTimestamp"
@@ -446,3 +446,43 @@ class TestMoralisAPI(unittest.TestCase):
         pd.testing.assert_frame_equal(
             result, expected_result,
         )
+
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_block")
+    def test_fetch_transactions(
+        self,
+        mock_block,
+        mock_transactions,
+    ):
+        transactions_df = pd.DataFrame(self.aligned_transactions)
+
+        transactions_df["block_number"] = np.random.default_rng(33).integers(
+            10_000_000, 100_000_000, size=len(self.aligned_transactions)
+        )
+
+        transactions_df["block_number"] = (
+            transactions_df["block_number"].astype(int)
+        )
+
+        mock_transactions.return_value = transactions_df
+        mock_block.return_value = {"block": 70507977}
+
+        result = self.api_client.get_wallet_blocks(
+            wallet_address="0x1",
+        )
+
+        expected_results = [
+            89104395,
+            49927801,
+            44202656,
+            61164207,
+            84777770,
+            91729339,
+            36996145,
+            32882459,
+            57736195,
+            62990314,
+            70507977,
+        ]
+
+        self.assertListEqual(result, expected_results)
