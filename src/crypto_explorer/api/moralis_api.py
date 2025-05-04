@@ -541,8 +541,8 @@ class MoralisAPI:
         result_df = pd.DataFrame(result).dropna(subset="security_score")
 
         result_df["token_balance"] = (
-            result_df["balance"].astype("int64")
-            / 10 ** result_df["decimals"].astype("int64")
+            result_df["balance"].astype(int) 
+            / 10 ** result_df["decimals"].astype(int)
         )
 
         inline_result = (
