@@ -55,7 +55,6 @@ class MoralisAPI:
         self.chain = chain
         self.logger = create_logger("moralis_api", verbose)
 
-    # Testado
     def process_transaction_data(self, data: list) -> list:
         """
         Processes transaction data for a given transaction.
@@ -103,7 +102,6 @@ class MoralisAPI:
 
         raise ValueError("data has less than 2 elements")
 
-    # Moralis API
     def fetch_transactions(
         self,
         wallet: str,
@@ -199,7 +197,6 @@ class MoralisAPI:
 
         return transactions
 
-    # Testado
     def get_swaps(self, swaps: list, add_summary: bool = False) -> list:
         """
         Retrieves all swaps data for a given wallet address.
@@ -248,7 +245,6 @@ class MoralisAPI:
 
         return swaps_data
 
-    # Testado
     def get_account_swaps(
         self,
         wallet: str,
@@ -329,7 +325,6 @@ class MoralisAPI:
 
         return swaps_df
 
-    # Moralis API
     def fetch_token_price(
         self,
         block_number: int,
@@ -365,7 +360,6 @@ class MoralisAPI:
 
         return result
 
-    # Moralis API
     def fetch_block(self, unix_date: int | str) -> pd.Series:
         """
         Retrieves block information corresponding to a given Unix
@@ -397,7 +391,6 @@ class MoralisAPI:
 
         return pd.Series(result)
 
-    # Moralis API
     def fetch_wallet_token_balances(
             self,
             wallet_address: str,
@@ -435,7 +428,6 @@ class MoralisAPI:
 
         return result
 
-    # Testado
     def get_wallet_token_balances(
         self,
         wallet_address: str,
@@ -457,7 +449,6 @@ class MoralisAPI:
         inline_result.columns = [str(block_number)]
         return inline_result
 
-    # Testado
     def get_wallet_token_balances_history(
         self,
         wallet_address: str,
