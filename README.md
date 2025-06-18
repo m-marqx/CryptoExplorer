@@ -25,12 +25,12 @@ This high-level API handler chains multiple providers to retrieve swap transacti
 
 Methods:
 
-- __get_wallet_swaps(wallet: str, coin_name: bool = False)__  
-   Extracts all swap transactions for a wallet.  
+- __get_wallet_swaps(wallet: str, coin_name: bool = False)__
+   Extracts all swap transactions for a wallet.
    _Note_: setting the `coin_name` param to `True` will include the names of the tokens involved.
-- __get_buys(wallet_address: str, asset_name: str = "WBTC")__  
+- __get_buys(wallet_address: str, asset_name: str = "WBTC")__
    Retrieves buy transactions from the swap data for the specified asset.
-- __get_sells(wallet_address: str, asset_name: str = "WBTC")__  
+- __get_sells(wallet_address: str, asset_name: str = "WBTC")__
    Retrieves sell transactions from the swap data for the specified asset.
 
 Example:
@@ -58,9 +58,9 @@ Provides methods to access swap data from the Blockscout API.
 
 Methods:
 
-- __get_transactions(txid: str, coin_name: bool = False)__  
+- __get_transactions(txid: str, coin_name: bool = False)__
    Extracts swap transaction data for a specific txid.
-- __get_account_transactions(wallet: str, coin_names: bool = False)__  
+- __get_account_transactions(wallet: str, coin_names: bool = False)__
    Retrieves all swap transactions for a wallet.
 
 _Note_: setting the `coin_name` param to `True` will include the names of the tokens involved.
@@ -87,11 +87,11 @@ Extracts swap transactions and historical token balance data using the Moralis A
 
 Methods:
 
-- __get_account_swaps(wallet: str, coin_name: bool = False, add_summary: bool = False)__  
-   Retrieves all swap transactions (swaps) for a wallet.  
-   _Note_: setting the `coin_name` param to `True` will include the names of the tokens involved.  
+- __get_account_swaps(wallet: str, coin_name: bool = False, add_summary: bool = False)__
+   Retrieves all swap transactions (swaps) for a wallet.
+   _Note_: setting the `coin_name` param to `True` will include the names of the tokens involved.
    _Note 2_: setting the `add_summary` param to `True` will includes transaction summaries.
-- __get_wallet_token_balances_history(wallet_address: str, token_address: str, kwargs)__  
+- __get_wallet_token_balances_history(wallet_address: str, token_address: str, kwargs)__
    Retrieves a wallet’s historical token balances to track portfolio changes.
 
 Example:
@@ -116,10 +116,10 @@ Retrieves OHLCV (price) market data from exchanges via the CCXT library.
 
 Methods:
 
-- __get_all_klines(until: int | None = None)__  
+- __get_all_klines(until: int | None = None)__
    Extracts OHLCV price data for the configured symbol and timeframe.
-- __to_OHLCV()__  
-   Converts the fetched OHLCV data into a pandas DataFrame.  
+- __to_OHLCV()__
+   Converts the fetched OHLCV data into a pandas DataFrame.
    _Note_: Call get_all_klines before to_OHLCV to avoid a ValueError.
 
 Example:
@@ -146,9 +146,9 @@ Extracts Bitcoin on-chain information using QuickNode endpoints.
 
 Methods:
 
-- __get_blockchain_info()__  
+- __get_blockchain_info()__
    Extracts general on-chain Bitcoin information such as network type, block height, sync progress, and protocol upgrade status.
-- __get_block_stats(block_height: int)__  
+- __get_block_stats(block_height: int)__
    Extracts detailed Bitcoin block statistics including transaction fees, size metrics, UTXO changes, SegWit data, and economic figures (in satoshis).
 
 Example:
@@ -204,7 +204,7 @@ python -m pytest ./tests
 
 ```bash
 git clone https://github.com/m-marqx/CryptoExplorer.git
-cd CryptoExplorer 
+cd CryptoExplorer
 
 ```
 
