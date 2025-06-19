@@ -433,8 +433,38 @@ class MoralisAPI:
         wallet_address: str,
         block_number: int,
     ) -> pd.DataFrame:
+        """
+        Retrieves and processes token balances for a wallet at a
+        specific block.
+
+        This method fetches the token balances for a given wallet
+        address at a specific block number. It then filters the results
+        to include only verified, non-spam tokens with a security score.
+        The raw balance is adjusted using the token's decimals to get
+        the actual token balance. The final output is a DataFrame
+        formatted for easy analysis, with token symbols as the index.
+
+        Parameters
+        ----------
+        wallet_address : str
+            The wallet address to query.
+        block_number : int
+            The block number at which to fetch the balances.
+
+        Returns
+        -------
+        pd.DataFrame
+            A DataFrame with token symbols as the index and a single
+            column named after the `block_number`, containing the
+            calculated token balances.
+        """
         result = self.fetch_wallet_token_balances(wallet_address, block_number)
-        result_df = pd.DataFrame(result).dropna(subset="security_score")
+
+        result_df = (
+            pd.DataFrame(result)
+            .dropna(subset="security_score")
+            .query("verified_contract == True and possible_spam == False")
+        )
 
         result_df["token_balance"] = (
             result_df["balance"].apply(int)
