@@ -9,7 +9,7 @@ with open("requirements.txt", "r") as req_file:
 
 setup(
     name="CryptoExplorer",
-    version="1.1.3",
+    version="1.1.4",
     author="Archie Marques",
     description="Simplified cryptocurrency and blockchain data extraction",
     long_description=long_description,
