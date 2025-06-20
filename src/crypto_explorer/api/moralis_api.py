@@ -1,3 +1,4 @@
+from typing import Literal
 import time
 
 import pandas as pd
@@ -360,7 +361,7 @@ class MoralisAPI:
 
         return result
 
-    def fetch_block(self, unix_date: int | str) -> pd.Series:
+    def fetch_block(self, unix_date: int | str | Literal["now"]) -> pd.Series:
         """
         Retrieves block information corresponding to a given Unix
         timestamp.
@@ -382,6 +383,10 @@ class MoralisAPI:
             raise InvalidArgumentError(
                 "unix_date must be an integer or string"
             )
+
+        if unix_date == "now":
+            unix_date = str(int(time.time()))
+
         params = {"chain": self.chain, "date": unix_date}
 
         result = evm_api.block.get_date_to_block(
