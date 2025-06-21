@@ -449,7 +449,7 @@ class TestMoralisAPI(unittest.TestCase):
 
     @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
     @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_block")
-    def test_fetch_transactions(
+    def test_fetch_unpaginated_transactions(
         self,
         mock_block,
         mock_transactions,
@@ -467,7 +467,7 @@ class TestMoralisAPI(unittest.TestCase):
         mock_transactions.return_value = transactions_df
         mock_block.return_value = {"block": 70507977}
 
-        result = self.api_client.get_wallet_blocks(
+        result = self.api_client.fetch_unpaginated_transactions(
             wallet_address="0x1",
         )
 

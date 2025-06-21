@@ -544,7 +544,7 @@ class MoralisAPI:
             A DataFrame containing the token balances (transposed),
             USD price, and block timestamp for each evaluated block.
         """
-        updated_blocks = self.get_wallet_blocks(
+        updated_blocks = self.fetch_unpaginated_transactions(
             wallet_address=wallet_address,
             **kwargs,
         )
@@ -572,7 +572,7 @@ class MoralisAPI:
 
         return pd.concat(token_balances)
 
-    def get_wallet_blocks(
+    def fetch_unpaginated_transactions(
         self,
         wallet_address: str,
         **kwargs: dict,
@@ -626,9 +626,9 @@ class MoralisAPI:
 
         Returns
         -------
-        pd.DataFrame
-            A DataFrame containing the token balances (transposed),
-            USD price, and block timestamp for each evaluated block.
+        list
+            A list of transaction dictionaries that have been filtered to exclude
+            spam and the specified categories.
         """
         transactions = self.fetch_transactions(
             wallet=wallet_address,
@@ -642,7 +642,6 @@ class MoralisAPI:
             .tolist()
         )
 
-        time_now = int(time.time())
-        last_block = self.fetch_block(time_now)["block"]
+        last_block = self.fetch_block("now")["block"]
         updated_blocks = [*block_numbers, last_block]
         return updated_blocks
