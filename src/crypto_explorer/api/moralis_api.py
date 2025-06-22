@@ -572,6 +572,102 @@ class MoralisAPI:
 
         return pd.concat(token_balances)
 
+    def fetch_paginated_transactions(
+        self,
+        wallet_address: str,
+        initial_block: int,
+        final_block: int,
+        **kwargs,
+    ) -> list:
+        """
+        Fetches transactions in paginated chunks between a start and end
+        block.
+
+        This method retrieves transactions for a specified wallet
+        address, starting from an initial block and ending at a final
+        block. It processes the transactions in chunks of 1,000,000
+        blocks to avoid hitting API limits or performance issues. The
+        transactions are filtered based on the provided keyword
+        arguments, which can include block range, date range, and other
+        transaction filters.
+
+        Parameters
+        ----------
+        wallet_address : str
+            The wallet address for which to fetch transactions.
+        initial_block : int
+            The block number to start fetching transactions from.
+        final_block : int
+            The block number to stop fetching transactions at.
+        **kwargs : dict
+            Additional keyword arguments to filter transactions, such
+            as:
+                - **from_block**: int
+                    The minimum block number to start retrieving
+                    transactions.
+                - **to_block**: int
+                    The maximum block number to stop retrieving
+                    transactions.
+                - **from_date**: str
+                    The start date
+                    (in seconds or a momentjs-compatible datestring).
+                - **to_date**: str
+                    The end date
+                    (in seconds or a momentjs-compatible datestring).
+                - **include_internal_transactions**: bool
+                    Whether to include internal transactions in the
+                    results.
+                - **nft_metadata**: bool
+                    Whether to include NFT metadata in the results.
+                - **cursor**: str
+                    A pagination cursor returned from previous
+                    responses.
+                - **order**: str
+                    The order of transactions, either "ASC" for
+                    ascending or "DESC" for descending.
+                - **limit**: int
+                    The maximum number of transactions to retrieve.
+        """
+        if initial_block >= final_block:
+            raise InvalidArgumentError(
+                "initial_block must be less than final_block"
+            )
+
+        if "from_block" in kwargs or "to_block" in kwargs:
+            kwargs["from_block"] = initial_block
+            kwargs["to_block"] = final_block
+            self.logger.warning(
+                "kwargs['from_block'] and kwargs['to_block'] are ignored, "
+                "using initial_block and final_block instead."
+            )
+
+        transactions = []
+        step = 1_000_000
+
+        blocks_list = list(range(initial_block, final_block, step))
+        if not blocks_list or blocks_list[-1] < final_block:
+            blocks_list.append(final_block)
+
+        start_block = initial_block
+        for i, end_block in enumerate(blocks_list):
+            progress_pct = (i + 1) / len(blocks_list) * 100
+            self.logger.info("Fetching blocks (%.2f%%)", progress_pct)
+
+            current_kwargs = kwargs.copy()
+            current_kwargs["from_block"] = start_block
+            current_kwargs["to_block"] = end_block
+
+            transactions.extend(self.fetch_transactions(
+                wallet=wallet_address,
+                excluded_categories=None,
+                **current_kwargs,
+            ))
+
+            # The next chunk starts from the block after the current end_block
+            start_block = end_block + 1
+
+        return transactions
+
     def fetch_unpaginated_transactions(
         self,
         wallet_address: str,

@@ -1,11 +1,12 @@
 import unittest
 from unittest.mock import patch, MagicMock, Mock
 from crypto_explorer import MoralisAPI
-from crypto_explorer.custom_exceptions import ApiError
+from crypto_explorer.custom_exceptions import ApiError, InvalidArgumentError
 import pandas as pd
 import numpy as np
 import os
 from itertools import cycle
+import pytest
 
 class TestMoralisAPI(unittest.TestCase):
     def setUp(self):
@@ -486,3 +487,32 @@ class TestMoralisAPI(unittest.TestCase):
         ]
 
         self.assertListEqual(result, expected_results)
+
+class TestFetchPaginatedTransactions(unittest.TestCase):
+    def setUp(self):
+        self.api_client = MoralisAPI(verbose=False, api_key="dummy_key")
+
+    @patch.object(MoralisAPI, "fetch_transactions")
+    def test_fetch_paginated_transactions_normal(self, mock_fetch):
+        mock_fetch.side_effect = [[{"block_number": 1}], [{"block_number": 2}], []]
+        initial_block = 0
+        final_block = 2_000_000
+
+        result = self.api_client.fetch_paginated_transactions(
+            wallet_address="0xabc",
+            initial_block=initial_block,
+            final_block=final_block,
+        )
+
+        self.assertListEqual(result, [{"block_number": 1}, {"block_number": 2}])
+
+        call_args = [call.kwargs for call in mock_fetch.call_args_list]
+
+        self.assertEqual(call_args[0]["from_block"], 0)
+        self.assertEqual(call_args[0]["to_block"], 0)
+
+        self.assertEqual(call_args[1]["from_block"], 1)
+        self.assertEqual(call_args[1]["to_block"], 1_000_000)
+
+        self.assertEqual(call_args[2]["from_block"], 1_000_001)
+        self.assertEqual(call_args[2]["to_block"], 2_000_000)
