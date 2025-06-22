@@ -516,3 +516,52 @@ class TestFetchPaginatedTransactions(unittest.TestCase):
 
         self.assertEqual(call_args[2]["from_block"], 1_000_001)
         self.assertEqual(call_args[2]["to_block"], 2_000_000)
+
+class TestGetWalletBlocks(unittest.TestCase):
+    def setUp(self):
+        self.api_client = MoralisAPI(verbose=False, api_key="dummy_key")
+
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_paginated_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_block")
+    def test_get_wallet_blocks_with_from_block(self, mock_fetch_block, mock_fetch_paginated):
+        mock_fetch_paginated.return_value = [{"block_number": 100}, {"block_number": 200}]
+        mock_fetch_block.return_value = {"block": 300}
+
+        result = self.api_client.get_wallet_blocks(
+            wallet_address="0x123", from_block=1, to_block=250
+        )
+
+        mock_fetch_paginated.assert_called_once_with(
+            wallet_address="0x123", initial_block=1, final_block=250, from_block=1, to_block=250
+        )
+        mock_fetch_block.assert_called_once_with("now")
+        self.assertEqual(result, [100, 200, 300])
+
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_unpaginated_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_block")
+    def test_get_wallet_blocks_without_from_block(self, mock_fetch_block, mock_fetch_unpaginated):
+        mock_fetch_unpaginated.return_value = [{"block_number": 400}, {"block_number": 500}]
+        mock_fetch_block.return_value = {"block": 600}
+
+        result = self.api_client.get_wallet_blocks(wallet_address="0x123")
+
+        mock_fetch_unpaginated.assert_called_once_with(wallet_address="0x123")
+        mock_fetch_block.assert_called_once_with("now")
+        self.assertEqual(result, [400, 500, 600])
+
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_paginated_transactions")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_block")
+    def test_get_wallet_blocks_with_missing_to_block(self, mock_fetch_block, mock_fetch_paginated):
+        mock_fetch_paginated.return_value = [{"block_number": 700}]
+        mock_fetch_block.return_value = {"block": 800}
+
+        result = self.api_client.get_wallet_blocks(
+            wallet_address="0x123", from_block=1
+        )
+
+        mock_fetch_paginated.assert_called_once_with(
+            wallet_address="0x123", initial_block=1, final_block=800, from_block=1, to_block=800
+        )
+        # Called twice: once for the missing to_block, once for the last_block
+        self.assertEqual(mock_fetch_block.call_count, 2)
+        self.assertEqual(result, [700, 800])

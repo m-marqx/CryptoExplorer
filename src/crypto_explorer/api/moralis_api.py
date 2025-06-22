@@ -484,6 +484,95 @@ class MoralisAPI:
         inline_result.columns = [str(block_number)]
         return inline_result
 
+    def get_wallet_blocks(
+        self,
+        wallet_address: str,
+        **kwargs: dict,
+    ) -> list:
+        """
+        Retrieves the historical token balances for a specific wallet.
+
+        This method gathers all transactions for the given wallet
+        address, extracts the block numbers, and then for each block
+        (including the latest block), it queries the token balances and
+        token price. The resulting data includes the token balance,
+        corresponding USD price, and the block timestamp at which the
+        price was retrieved.
+
+        Parameters
+        ----------
+        wallet_address : str
+            The wallet address for which to fetch the token balances
+            history.
+        token_address : str
+            The address of the token to retrieve the price for at each
+            block.
+        **kwargs : dict
+            Additional keyword arguments to filter transactions, such
+            as:
+                - **from_block**: int
+                    The minimum block number to start retrieving
+                    transactions.
+                - **to_block**: int
+                    The maximum block number to stop retrieving
+                    transactions.
+                - **from_date**: str
+                    The start date
+                    (in seconds or a momentjs-compatible datestring).
+                - **to_date**: str
+                    The end date
+                    (in seconds or a momentjs-compatible datestring).
+                - **include_internal_transactions**: bool
+                    Whether to include internal transactions in the
+                    results.
+                - **nft_metadata**: bool
+                    Whether to include NFT metadata in the results.
+                - **cursor**: str
+                    A pagination cursor returned from previous
+                    responses.
+                - **order**: str
+                    The order of transactions, either "ASC" for
+                    ascending or "DESC" for descending.
+                - **limit**: int
+                    The maximum number of transactions to retrieve.
+
+        Returns
+        -------
+        list
+            A list of transaction dictionaries that have been filtered
+            to exclude spam and the specified categories.
+
+        Raises
+        ------
+        InvalidArgumentError
+            If `from_block` is greater than or equal to `to_block`.
+        """
+        if "from_block" in kwargs:
+            if "to_block" not in kwargs:
+                kwargs["to_block"] = self.fetch_block("now")["block"]
+
+            transactions = self.fetch_paginated_transactions(
+                wallet_address=wallet_address,
+                initial_block=kwargs["from_block"],
+                final_block=kwargs["to_block"],
+                **kwargs,
+            )
+        else:
+            transactions = self.fetch_unpaginated_transactions(
+                wallet_address=wallet_address,
+                **kwargs,
+            )
+
+        block_numbers = (
+            pd.DataFrame(transactions)['block_number']
+            .astype(int)
+            .tolist()
+        )
+
+        last_block = self.fetch_block("now")["block"]
+        updated_blocks = [*block_numbers, last_block]
+        return updated_blocks
+
     def get_wallet_token_balances_history(
         self,
         wallet_address: str,
