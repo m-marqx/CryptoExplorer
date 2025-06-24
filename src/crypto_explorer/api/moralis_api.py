@@ -830,3 +830,57 @@ class MoralisAPI:
         last_block = self.fetch_block("now")["block"]
         updated_blocks = [*block_numbers, last_block]
         return updated_blocks
+
+    def fetch_first_and_last_transactions(
+        self,
+        wallet_address: str,
+        chains: list[str] | None = None,
+    ):
+        """
+        Fetches the first and last transactions for a given wallet
+        address across multiple chains.
+
+        Parameters
+        ----------
+        wallet_address : str
+            The wallet address to query.
+        chains : list[str] | None, optional
+            A list of blockchain names to query.
+            If None, defaults to the chain specified during the
+            initialization of the MoralisAPI instance.
+            (default: None)
+
+        Returns
+        -------
+        dict
+            A dictionary containing the first and last transactions for
+            each chain.
+        """
+        first_and_last_transactions = {}
+
+        if chains is None:
+            chains = [self.chain]
+
+        params = {
+            "chains": chains,
+            "address": wallet_address,
+        }
+
+        txn = evm_api.wallets.get_wallet_active_chains(
+            api_key=self.api_key,
+            params=params,
+        )['active_chains']
+
+        if txn:
+            first_and_last_transactions = {
+                "first_transaction": txn[0]["first_transaction"],
+                "last_transaction": txn[0]["last_transaction"]
+            }
+        else:
+            self.logger.warning(
+                "No transactions found for wallet %s on chain %s",
+                wallet_address,
+                chains,
+            )
+
+        return pd.DataFrame(first_and_last_transactions)
