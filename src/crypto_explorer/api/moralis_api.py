@@ -423,13 +423,14 @@ class MoralisAPI:
             "chain": self.chain,
             "to_block": block_number,
             "exclude_spam": True,
+            "exclude_unverified_contracts": True,
             "address": wallet_address,
         }
 
-        result = evm_api.token.get_wallet_token_balances(
+        result = evm_api.wallets.get_wallet_token_balances_price(
             api_key=self.api_key,
             params=params,
-        )
+        )['result']
 
         return result
 
