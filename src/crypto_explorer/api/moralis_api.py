@@ -473,8 +473,7 @@ class MoralisAPI:
         )
 
         result_df["token_balance"] = (
-            result_df["balance"].apply(int)
-            / 10 ** result_df["decimals"].astype(int)
+            result_df["balance_formatted"].astype("float64")
         )
 
         inline_result = (
