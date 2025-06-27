@@ -468,16 +468,15 @@ class MoralisAPI:
 
         result_df = (
             pd.DataFrame(result)
-            .dropna(subset="security_score")
             .query("verified_contract == True and possible_spam == False")
         )
 
-        result_df["token_balance"] = (
+        result_df["balance_formatted"] = (
             result_df["balance_formatted"].astype("float64")
         )
 
         inline_result = (
-            result_df[["symbol", "token_balance"]]
+            result_df[["symbol", "balance_formatted"]]
             .set_index("symbol")
         )
 
