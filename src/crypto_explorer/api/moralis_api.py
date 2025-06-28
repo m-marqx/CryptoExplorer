@@ -547,13 +547,8 @@ class MoralisAPI:
             If `from_block` is greater than or equal to `to_block`.
         """
         if "from_block" in kwargs:
-            if "to_block" not in kwargs:
-                kwargs["to_block"] = self.fetch_block("now")["block"]
-
             transactions = self.fetch_paginated_transactions(
                 wallet_address=wallet_address,
-                initial_block=kwargs["from_block"],
-                final_block=kwargs["to_block"],
                 **kwargs,
             )
         else:
