@@ -486,6 +486,7 @@ class MoralisAPI:
     def get_wallet_blocks(
         self,
         wallet_address: str,
+        excluded_categories: list | None = None,
         **kwargs: dict,
     ) -> list:
         """
@@ -549,6 +550,7 @@ class MoralisAPI:
         if "from_block" in kwargs:
             transactions = self.fetch_paginated_transactions(
                 wallet_address=wallet_address,
+                excluded_categories=excluded_categories,
                 **kwargs,
             )
         else:
