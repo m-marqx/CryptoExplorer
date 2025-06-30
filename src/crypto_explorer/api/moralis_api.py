@@ -573,6 +573,7 @@ class MoralisAPI:
         self,
         wallet_address: str,
         token_address: str,
+        excluded_categories: list | None = None,
         **kwargs: dict,
     ) -> pd.DataFrame:
         """
@@ -629,8 +630,9 @@ class MoralisAPI:
             A DataFrame containing the token balances (transposed),
             USD price, and block timestamp for each evaluated block.
         """
-        updated_blocks = self.fetch_unpaginated_transactions(
+        updated_blocks = self.get_wallet_blocks(
             wallet_address=wallet_address,
+            excluded_categories=excluded_categories,
             **kwargs,
         )
 
