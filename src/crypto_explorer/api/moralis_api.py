@@ -173,7 +173,7 @@ class MoralisAPI:
         txn_infos = evm_api.wallets.get_wallet_history(
             api_key=self.api_key,
             params=params,
-        )["result"]
+        )
 
         transactions = []
 
@@ -187,9 +187,13 @@ class MoralisAPI:
                 "send",
             ]
 
-        for txn in txn_infos:
-            is_not_spam = not txn["possible_spam"]
+        for txn in txn_infos["result"]:
+            is_verified_contract = all(
+                [item["verified_contract"] for item in txn["erc20_transfers"]]
+            )
+            is_not_spam = not txn["possible_spam"] and is_verified_contract
             in_excluded_categories = txn["category"] in excluded_categories
+            txn['cursor'] = txn_infos.get("cursor", None)
 
             if is_not_spam and not in_excluded_categories:
                 transactions.append(txn)
