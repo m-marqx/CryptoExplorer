@@ -666,8 +666,6 @@ class MoralisAPI:
     def fetch_paginated_transactions(
         self,
         wallet_address: str,
-        initial_block: int,
-        final_block: int,
         **kwargs,
     ) -> list:
         """
@@ -686,10 +684,6 @@ class MoralisAPI:
         ----------
         wallet_address : str
             The wallet address for which to fetch transactions.
-        initial_block : int
-            The block number to start fetching transactions from.
-        final_block : int
-            The block number to stop fetching transactions at.
         **kwargs : dict
             Additional keyword arguments to filter transactions, such
             as:
@@ -719,45 +713,27 @@ class MoralisAPI:
                 - **limit**: int
                     The maximum number of transactions to retrieve.
         """
-        if initial_block >= final_block:
+        if "from_block" not in kwargs:
             raise InvalidArgumentError(
-                "initial_block must be less than final_block"
+                "from_block is required for paginated transactions"
             )
 
-        if "from_block" in kwargs or "to_block" in kwargs:
-            kwargs["from_block"] = initial_block
-            kwargs["to_block"] = final_block
-            self.logger.warning(
-                "kwargs['from_block'] and kwargs['to_block'] are ignored, "
-                "using initial_block and final_block instead."
-            )
+        response = self.fetch_transactions(
+            wallet=wallet_address,
+            **kwargs,
+        )
 
-        transactions = []
-        step = 1_000_000
+        txn_list = response
 
-        blocks_list = list(range(initial_block, final_block, step))
-        if not blocks_list or blocks_list[-1] < final_block:
-            blocks_list.append(final_block)
-
-        start_block = initial_block
-        for i, end_block in enumerate(blocks_list):
-            progress_pct = (i + 1) / len(blocks_list) * 100
-            self.logger.info("Fetching blocks (%.2f%%)", progress_pct)
-
-            current_kwargs = kwargs.copy()
-            current_kwargs["from_block"] = start_block
-            current_kwargs["to_block"] = end_block
-
-            transactions.extend(self.fetch_transactions(
+        while response[0]["cursor"]:
+            kwargs["cursor"] = response[0]["cursor"]
+            response = self.fetch_transactions(
                 wallet=wallet_address,
-                excluded_categories=None,
-                **current_kwargs,
-            ))
+                **kwargs
+            )
+            txn_list.extend(response)
 
-            # The next chunk starts from the block after the current end_block
-            start_block = end_block + 1
-
-        return transactions
+        return txn_list
 
     def fetch_unpaginated_transactions(
         self,
