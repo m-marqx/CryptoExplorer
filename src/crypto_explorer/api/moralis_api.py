@@ -666,6 +666,7 @@ class MoralisAPI:
     def fetch_paginated_transactions(
         self,
         wallet_address: str,
+        excluded_categories: list | None = None,
         **kwargs,
     ) -> list:
         """
@@ -684,6 +685,14 @@ class MoralisAPI:
         ----------
         wallet_address : str
             The wallet address for which to fetch transactions.
+        excluded_categories : list or None, optional
+            A list of transaction categories to exclude from the
+            results. If None, a default list of categories including
+            "contract interaction", "token receive", "airdrop", "receive",
+            "approve", and "send" will be used.
+            If you want to include all categories, set this to an empty
+            list `[]` or `None`.
+            (default: None)
         **kwargs : dict
             Additional keyword arguments to filter transactions, such
             as:
@@ -720,6 +729,7 @@ class MoralisAPI:
 
         response = self.fetch_transactions(
             wallet=wallet_address,
+            excluded_categories=excluded_categories,
             **kwargs,
         )
 
@@ -729,6 +739,7 @@ class MoralisAPI:
             kwargs["cursor"] = response[0]["cursor"]
             response = self.fetch_transactions(
                 wallet=wallet_address,
+                excluded_categories=excluded_categories,
                 **kwargs
             )
             txn_list.extend(response)
