@@ -752,23 +752,15 @@ class MoralisAPI:
         **kwargs: dict,
     ) -> list:
         """
-        Retrieves the historical token balances for a specific wallet.
+        Retrieves transactions for a wallet without pagination constraints.
 
         This method gathers all transactions for the given wallet
-        address, extracts the block numbers, and then for each block
-        (including the latest block), it queries the token balances and
-        token price. The resulting data includes the token balance,
-        corresponding USD price, and the block timestamp at which the
-        price was retrieved.
+        address using a single API call without pagination.
 
         Parameters
         ----------
         wallet_address : str
-            The wallet address for which to fetch the token balances
-            history.
-        token_address : str
-            The address of the token to retrieve the price for at each
-            block.
+            The wallet address for which to fetch transactions.
         **kwargs : dict
             Additional keyword arguments to filter transactions, such
             as:
@@ -804,21 +796,11 @@ class MoralisAPI:
             A list of transaction dictionaries that have been filtered to exclude
             spam and the specified categories.
         """
-        transactions = self.fetch_transactions(
+        return self.fetch_transactions(
             wallet=wallet_address,
             excluded_categories=None,
             **kwargs,
         )
-
-        block_numbers = (
-            pd.DataFrame(transactions)['block_number']
-            .astype(int)
-            .tolist()
-        )
-
-        last_block = self.fetch_block("now")["block"]
-        updated_blocks = [*block_numbers, last_block]
-        return updated_blocks
 
     def fetch_first_and_last_transactions(
         self,
