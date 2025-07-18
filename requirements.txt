@@ -6,4 +6,6 @@ pandas>=2.0.3
 pyarrow>=12.0.0
 numpy>=1.23.5
 moralis>=0.1.49
+sqlalchemy>=2.0.41
+psycopg2>=2.9.10
 pytest
