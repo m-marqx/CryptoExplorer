@@ -382,35 +382,31 @@ class TestMoralisAPI(unittest.TestCase):
         mock_get_balances.assert_called_once()
 
     @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_unpaginated_transactions")
-    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_block")
-    def test_get_wallet_blocks_without_from_block(self, mock_fetch_block, mock_fetch_unpaginated):
+    def test_get_wallet_blocks_without_from_block(self, mock_fetch_unpaginated):
         """Test get_wallet_blocks without from_block parameter"""
         mock_transactions = [
             {"block_number": "100000"},
             {"block_number": "100001"}
         ]
         mock_fetch_unpaginated.return_value = mock_transactions
-        mock_fetch_block.return_value = {"block": 200000}
 
         result = self.api_client.get_wallet_blocks("0x1")
 
-        expected_blocks = [100000, 100001, 200000]
+        expected_blocks = [100000, 100001]
         self.assertEqual(result, expected_blocks)
 
     @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_paginated_transactions")
-    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_block")
-    def test_get_wallet_blocks_with_from_block(self, mock_fetch_block, mock_fetch_paginated):
+    def test_get_wallet_blocks_with_from_block(self, mock_fetch_paginated):
         """Test get_wallet_blocks with from_block parameter"""
         mock_transactions = [
             {"block_number": "100000"},
             {"block_number": "100001"}
         ]
         mock_fetch_paginated.return_value = mock_transactions
-        mock_fetch_block.return_value = {"block": 200000}
 
         result = self.api_client.get_wallet_blocks("0x1", from_block=90000)
 
-        expected_blocks = [100000, 100001, 200000]
+        expected_blocks = [100000, 100001]
         self.assertEqual(result, expected_blocks)
 
     @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_transactions")
@@ -432,7 +428,7 @@ class TestMoralisAPI(unittest.TestCase):
         second_response = [
             {"transaction_hash": "0x2", "cursor": None}
         ]
-        
+
         mock_fetch_transactions.side_effect = [first_response, second_response]
 
         result = self.api_client.fetch_paginated_transactions("0x1", from_block=100000)

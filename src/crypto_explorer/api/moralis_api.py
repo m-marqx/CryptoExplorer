@@ -569,9 +569,7 @@ class MoralisAPI:
             .tolist()
         )
 
-        last_block = self.fetch_block("now")["block"]
-        updated_blocks = [*block_numbers, last_block]
-        return updated_blocks
+        return block_numbers
 
     def get_wallet_token_balances_history(
         self,
