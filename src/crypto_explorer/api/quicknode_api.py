@@ -65,7 +65,38 @@ class QuickNodeAPI:
         self.logger.addHandler(handler)
         self.logger.propagate = True
 
-    def get_block_stats(self, block_height: int):
+    def _check_response(self, response: requests.Response) -> dict | None:
+        """
+        Check and handle API response errors.
+
+        Parameters
+        ----------
+        response : requests.Response
+            The response object from the API request.
+
+        Returns
+        -------
+        dict or None
+            The JSON result if successful, None if 403 (skip to next key).
+
+        Raises
+        ------
+        ApiError
+            If the response indicates an error or cannot be parsed.
+        """
+        if response.ok:
+            return response.json()["result"]
+
+        if response.status_code == 403:
+            self.logger.critical("Forbidden error, skipping key")
+            self.logger.critical(response.content)
+            return None
+
+        try:
+            error_data = response.json()
+            raise ApiError(f"{error_data}")
+        except json.JSONDecodeError:
+            raise ApiError(response.text)
         """
         Retrieve statistics for a Bitcoin block by height.
 
