@@ -138,6 +138,64 @@ class QuickNodeAPI:
 
         raise ApiError(f"Unexpected error: {exception}")
 
+    def _make_request(self, payload: str) -> dict:
+        """
+        Make a request with automatic failover and rate limiting.
+
+        Iterates through API keys starting from default_api_key_idx,
+        handles exceptions with retry logic, and enforces rate limiting.
+
+        Parameters
+        ----------
+        payload : str
+            JSON-encoded payload for the POST request.
+
+        Returns
+        -------
+        dict
+            The result from the successful API response.
+
+        Raises
+        ------
+        ApiError
+            If all API keys are exhausted without success.
+        """
+        headers = {"Content-Type": "application/json"}
+
+        for idx in range(self.default_api_key_idx, len(self.api_keys)):
+            api_key = self.api_keys[idx]
+            self.default_api_key_idx = idx
+
+            start = time.perf_counter()
+
+            try:
+                response = requests.request(
+                    "POST",
+                    api_key,
+                    headers=headers,
+                    data=payload,
+                    timeout=self.REQUEST_TIMEOUT
+                )
+            except (
+                requests.exceptions.SSLError,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout
+            ) as e:
+                retry_delay = self._handle_request_exception(e)
+                if retry_delay is None:
+                    continue
+                time.sleep(retry_delay)
+                return self._make_request(payload)
+
+            result = self._check_response(response)
+            if result is None:
+                continue
+
+            self._enforce_rate_limit(start)
+            return result
+
+        raise ApiError("All API keys exhausted")
+
         """
         Retrieve statistics for a Bitcoin block by height.
 
