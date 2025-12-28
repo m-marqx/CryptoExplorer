@@ -51,7 +51,7 @@ class QuickNodeAPI:
         self.api_keys = api_keys
         self.default_api_key_idx = default_api_key_idx
 
-        self.logger = logging.getLogger("moralis_API")
+        self.logger = logging.getLogger("quicknode_API")
         formatter = logging.Formatter(
             "%(levelname)s %(asctime)s: %(message)s", datefmt="%H:%M:%S"
         )
