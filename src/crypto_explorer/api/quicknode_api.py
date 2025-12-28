@@ -41,6 +41,13 @@ class QuickNodeAPI:
         ValueError
             If api_keys list is empty or default_api_key_idx is out of bounds.
         """
+        if not api_keys:
+            raise ValueError("api_keys list cannot be empty")
+        if not 0 <= default_api_key_idx < len(api_keys):
+            raise ValueError(
+                f"default_api_key_idx must be between 0 and {len(api_keys) - 1}"
+            )
+
         self.api_keys = api_keys
         self.default_api_key_idx = default_api_key_idx
 
