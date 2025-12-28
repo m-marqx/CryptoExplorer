@@ -97,6 +97,47 @@ class QuickNodeAPI:
             raise ApiError(f"{error_data}")
         except json.JSONDecodeError:
             raise ApiError(response.text)
+
+    def _handle_request_exception(self, exception: Exception) -> int | None:
+        """
+        Handle request exceptions and return retry delay.
+
+        Parameters
+        ----------
+        exception : Exception
+            The exception that was raised during the request.
+
+        Returns
+        -------
+        int or None
+            Seconds to wait before retry, or None to skip to next key.
+
+        Raises
+        ------
+        ApiError
+            If the error cannot be recovered from.
+        """
+        if isinstance(exception, requests.exceptions.SSLError):
+            self.logger.critical("SSLError, skipping key")
+            self.logger.critical("Error message: %s", exception)
+            return None
+
+        if isinstance(exception, requests.exceptions.ConnectionError):
+            self.logger.critical(
+                "Connection error, retrying in %d seconds",
+                self.CONNECTION_RETRY_SECONDS
+            )
+            return self.CONNECTION_RETRY_SECONDS
+
+        if isinstance(exception, requests.exceptions.Timeout):
+            self.logger.critical(
+                "Timeout error, retrying in %d seconds",
+                self.TIMEOUT_RETRY_SECONDS
+            )
+            return self.TIMEOUT_RETRY_SECONDS
+
+        raise ApiError(f"Unexpected error: {exception}")
+
         """
         Retrieve statistics for a Bitcoin block by height.
 
