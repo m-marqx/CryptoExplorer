@@ -18,6 +18,12 @@ class QuickNodeAPI:
     default_api_key_idx : int
         Starting index in the api_keys list to begin requests from.
     """
+
+    RATE_LIMIT_SECONDS = 1
+    CONNECTION_RETRY_SECONDS = 300
+    TIMEOUT_RETRY_SECONDS = 120
+    REQUEST_TIMEOUT = 60
+
     def __init__(self, api_keys: list, default_api_key_idx: int):
         """
         Initialize QuickNodeAPI client with multiple API endpoints.
