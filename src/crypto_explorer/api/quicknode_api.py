@@ -196,6 +196,19 @@ class QuickNodeAPI:
 
         raise ApiError("All API keys exhausted")
 
+    def _enforce_rate_limit(self, start_time: float) -> None:
+        """
+        Enforce rate limiting by sleeping if request was too fast.
+
+        Parameters
+        ----------
+        start_time : float
+            The time.perf_counter() value from when the request started.
+        """
+        elapsed = time.perf_counter() - start_time
+        if elapsed < self.RATE_LIMIT_SECONDS:
+            time.sleep(self.RATE_LIMIT_SECONDS - elapsed)
+
         """
         Retrieve statistics for a Bitcoin block by height.
 
