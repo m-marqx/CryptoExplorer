@@ -209,12 +209,12 @@ class QuickNodeAPI:
         if elapsed < self.RATE_LIMIT_SECONDS:
             time.sleep(self.RATE_LIMIT_SECONDS - elapsed)
 
+    def get_block_stats(self, block_height: int) -> dict:
         """
         Retrieve statistics for a Bitcoin block by height.
 
         Makes POST requests to QuickNode API endpoints with automatic
-        failover between provided API keys. Implements 1 second rate
-        limiting.
+        failover between provided API keys. Implements rate limiting.
 
         Parameters
         ----------
@@ -228,50 +228,15 @@ class QuickNodeAPI:
 
         Raises
         ------
-        ValueError
+        ApiError
             If all API key requests fail.
         """
-        payload = json.dumps(
-            {
-                "method": "getblockstats",
-                "params": [block_height],
-            }
-        )
-        headers = {"Content-Type": "application/json"}
+        payload = json.dumps({
+            "method": "getblockstats",
+            "params": [block_height],
+        })
+        return self._make_request(payload)
 
-        for api_key in self.api_keys[self.default_api_key_idx:]:
-            self.default_api_key_idx = self.api_keys.index(api_key)
-
-            start = time.perf_counter()
-            try:
-                response = requests.request(
-                    "POST", api_key, headers=headers, data=payload, timeout=60
-                )
-            except requests.exceptions.ConnectionError:
-                self.logger.critical("Connection error, retrying in 5 minutes")
-
-                time.sleep(300)
-
-                return self.get_block_stats(block_height)
-
-            except requests.exceptions.Timeout:
-                self.logger.critical("Connection error, retrying in 2 minutes")
-
-                time.sleep(120)
-
-                return self.get_block_stats(block_height)
-
-            if response.ok:
-                end = time.perf_counter()
-                time_elapsed = end - start
-
-                if time_elapsed < 1:
-                    time.sleep(1 - time_elapsed)
-
-                return response.json()["result"]
-        raise ApiError(response.json())
-
-    def get_blockchain_info(self):
         """
         Retrieve information about the Bitcoin blockchain.
 
