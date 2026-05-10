@@ -414,6 +414,210 @@ class MoralisAPI:
         raw = int(result.get("balance", 0) or 0)
         return raw / (10 ** decimals)
 
+    def get_account_balance_usd(
+        self,
+        wallet: str,
+        token_map: dict[str, str] | None = None,
+        native_price_address: str = (
+            "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
+        ),
+        wbtc_address: str = (
+            "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6"
+        ),
+        excluded_categories: list[str] | None = None,
+        from_block: int | None = None,
+        include_current_block: bool = True,
+    ) -> pd.DataFrame:
+        """
+        Build a per-block USD balance history for a wallet.
+
+        Produces a DataFrame analogous to
+        :py:meth:`DataPipelineAPI.get_wallet_transactions_unsynced` but
+        sourced directly from explicit token-address lookups, which
+        avoids the silent USDT/stable drop-outs that occur when Moralis
+        flags stable contracts as unverified.
+
+        Strategy
+        --------
+        1. Discover swap/receive blocks via
+           :py:meth:`fetch_paginated_transactions`.
+        2. Optionally append the current latest block.
+        3. For each block: fetch tracked ERC-20 balances by address,
+           native balance, WBTC USD price, and native USD price.
+        4. Compose ``total_usd`` (stables + WBTC * price) and
+           ``formatted_total_usd`` (``total_usd`` + native * native_price).
+
+        Parameters
+        ----------
+        wallet : str
+            The wallet address to evaluate.
+        token_map : dict[str, str] or None, optional
+            Mapping of display column name to token contract address.
+            Defaults to Polygon stables + WBTC
+            (``USDC``, ``USDT``, ``WBTC``).
+        native_price_address : str, optional
+            Contract address used to price the native coin
+            (default WPOL on Polygon).
+        wbtc_address : str, optional
+            WBTC contract address used to compute WBTC USD value.
+        excluded_categories : list[str] or None, optional
+            Transaction categories to exclude when discovering blocks.
+            Defaults to ``["approve"]`` (mirrors the unsynced pipeline).
+        from_block : int or None, optional
+            Starting block. If ``None``, derived from the wallet's first
+            on-chain transaction via
+            :py:meth:`fetch_first_and_last_transactions`.
+        include_current_block : bool, optional
+            If ``True`` (default), append a row for the current latest
+            block so the tail reflects the live balance.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Indexed by ``height`` (block number, ascending) with columns
+            ``<token symbols>``, native symbol, ``usdPrice``,
+            ``polPrice``, ``blockTimestamp``, ``total_usd``, and
+            ``formatted_total_usd``.
+        """
+        if token_map is None:
+            token_map = {
+                "USDC": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+                "USDT": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+                "WBTC": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
+            }
+        if excluded_categories is None:
+            excluded_categories = ["approve"]
+
+        token_map_lower = {sym: addr.lower() for sym, addr in token_map.items()}
+        token_addresses = list(token_map_lower.values())
+        wbtc_addr_lower = wbtc_address.lower()
+
+        if from_block is None:
+            first_last = self.fetch_first_and_last_transactions(
+                wallet_address=wallet
+            )
+            from_block = int(first_last["first_transaction"]["block_number"])
+
+        self.logger.info(
+            "Discovering blocks for wallet %s starting at block %d",
+            wallet,
+            from_block,
+        )
+        transactions = self.fetch_paginated_transactions(
+            wallet_address=wallet,
+            excluded_categories=excluded_categories,
+            order="ASC",
+            from_block=from_block,
+        )
+
+        txn_df = pd.DataFrame(transactions)
+        if txn_df.empty:
+            self.logger.warning("No transactions discovered for wallet %s", wallet)
+            block_meta = pd.DataFrame(
+                columns=["block_number", "block_timestamp"]
+            )
+        else:
+            block_meta = (
+                txn_df[["block_number", "block_timestamp"]]
+                .drop_duplicates(subset="block_number")
+                .copy()
+            )
+            block_meta["block_number"] = block_meta["block_number"].astype(int)
+            block_meta["block_timestamp"] = pd.to_datetime(
+                block_meta["block_timestamp"], utc=True
+            )
+
+        if include_current_block:
+            try:
+                latest = self.fetch_block("now")
+                latest_block = int(latest["block"])
+                latest_ts = pd.to_datetime(latest["block_timestamp"], utc=True)
+                if latest_block not in set(block_meta["block_number"].tolist()):
+                    block_meta = pd.concat(
+                        [
+                            block_meta,
+                            pd.DataFrame(
+                                [{
+                                    "block_number": latest_block,
+                                    "block_timestamp": latest_ts,
+                                }]
+                            ),
+                        ],
+                        ignore_index=True,
+                    )
+            except Exception as exc:
+                self.logger.warning(
+                    "Could not append current block: %s", exc
+                )
+
+        block_meta = block_meta.sort_values("block_number").reset_index(drop=True)
+
+        rows: list[dict] = []
+        total = len(block_meta)
+        for idx, meta in block_meta.iterrows():
+            block = int(meta["block_number"])
+            try:
+                erc20 = self.fetch_erc20_balances_at_block(
+                    wallet_address=wallet,
+                    token_addresses=token_addresses,
+                    block_number=block,
+                )
+                native = self.fetch_native_balance_at_block(
+                    wallet_address=wallet,
+                    block_number=block,
+                )
+                wbtc_price = float(
+                    self.fetch_token_price(block, wbtc_address)["usdPrice"]
+                )
+                pol_price = float(
+                    self.fetch_token_price(block, native_price_address)[
+                        "usdPrice"
+                    ]
+                )
+            except Exception as exc:
+                self.logger.warning(
+                    "Skipping block %d due to error: %s", block, exc
+                )
+                continue
+
+            row: dict = {"height": block, "POL": native}
+            for sym, addr in token_map_lower.items():
+                row[sym] = erc20.get(addr, 0.0)
+            row["usdPrice"] = wbtc_price
+            row["polPrice"] = pol_price
+            row["blockTimestamp"] = meta["block_timestamp"]
+
+            stable_total = sum(
+                row[sym]
+                for sym, addr in token_map_lower.items()
+                if addr != wbtc_addr_lower
+            )
+            wbtc_balance = next(
+                (row[sym] for sym, addr in token_map_lower.items()
+                 if addr == wbtc_addr_lower),
+                0.0,
+            )
+            row["total_usd"] = stable_total + wbtc_balance * wbtc_price
+            row["formatted_total_usd"] = row["total_usd"] + native * pol_price
+
+            rows.append(row)
+
+            progress = (idx + 1) / total if total else 1.0
+            self.logger.info(
+                "Progress: %.2f%% - %d / %d (block %d)",
+                progress * 100,
+                idx + 1,
+                total,
+                block,
+            )
+
+        if not rows:
+            self.logger.warning("No balance rows produced for wallet %s", wallet)
+            return pd.DataFrame()
+
+        result_df = pd.DataFrame(rows).set_index("height").sort_index()
+        return result_df
+
     def fetch_token_price(
         self,
         block_number: int,
