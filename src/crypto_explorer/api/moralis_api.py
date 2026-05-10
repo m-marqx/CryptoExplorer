@@ -380,6 +380,40 @@ class MoralisAPI:
             balances[addr] = raw / (10 ** decimals) if decimals else float(raw)
         return balances
 
+    def fetch_native_balance_at_block(
+        self,
+        wallet_address: str,
+        block_number: int | None = None,
+        decimals: int = 18,
+    ) -> float:
+        """
+        Retrieve the native-coin balance at a given block.
+
+        Parameters
+        ----------
+        wallet_address : str
+            The wallet address to query.
+        block_number : int or None, optional
+            The block number to query at. ``None`` for latest.
+        decimals : int, optional
+            Decimals of the native coin (default 18 for EVM chains).
+
+        Returns
+        -------
+        float
+            Decimal-normalized native balance.
+        """
+        params: dict = {"chain": self.chain, "address": wallet_address}
+        if block_number is not None:
+            params["to_block"] = block_number
+
+        result = evm_api.balance.get_native_balance(
+            api_key=self.api_key,
+            params=params,
+        )
+        raw = int(result.get("balance", 0) or 0)
+        return raw / (10 ** decimals)
+
     def fetch_token_price(
         self,
         block_number: int,
