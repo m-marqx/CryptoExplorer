@@ -330,6 +330,56 @@ class MoralisAPI:
 
         return swaps_df
 
+    def fetch_erc20_balances_at_block(
+        self,
+        wallet_address: str,
+        token_addresses: list[str],
+        block_number: int | None = None,
+    ) -> dict[str, float]:
+        """
+        Retrieve formatted ERC-20 balances for an explicit token list.
+
+        Bypasses the spam/unverified-contract filters of
+        :py:meth:`fetch_wallet_token_balances` by querying tokens by
+        contract address. This is robust to Moralis intermittently
+        flagging stable-coin contracts (e.g. USDT) as unverified.
+
+        Parameters
+        ----------
+        wallet_address : str
+            The wallet address to query.
+        token_addresses : list[str]
+            Lowercase ERC-20 contract addresses to fetch.
+        block_number : int or None, optional
+            The block number to query at. ``None`` for latest.
+
+        Returns
+        -------
+        dict[str, float]
+            Mapping of lowercase token address to decimal-normalized
+            balance. Tokens absent from the response default to ``0.0``.
+        """
+        params: dict = {
+            "chain": self.chain,
+            "address": wallet_address,
+            "token_addresses": token_addresses,
+        }
+        if block_number is not None:
+            params["to_block"] = block_number
+
+        result = evm_api.token.get_wallet_token_balances(
+            api_key=self.api_key,
+            params=params,
+        )
+
+        balances = {addr.lower(): 0.0 for addr in token_addresses}
+        for entry in result:
+            addr = entry["token_address"].lower()
+            decimals = int(entry.get("decimals", 0) or 0)
+            raw = int(entry.get("balance", 0) or 0)
+            balances[addr] = raw / (10 ** decimals) if decimals else float(raw)
+        return balances
+
     def fetch_token_price(
         self,
         block_number: int,
