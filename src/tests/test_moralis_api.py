@@ -723,6 +723,9 @@ class TestMoralisAPI(unittest.TestCase):
             'fetch_transactions',
             'get_swaps', 
             'get_account_swaps',
+            'fetch_erc20_balances_at_block',
+            'fetch_native_balance_at_block',
+            'get_account_balance_usd',
             'fetch_token_price',
             'fetch_block',
             'fetch_wallet_token_balances',
@@ -1070,6 +1073,213 @@ class TestMoralisAPI(unittest.TestCase):
         
         self.assertIn("summary", result.columns)
         mock_get_swaps.assert_called_once_with([{"dummy": "transaction"}], True)
+
+    @patch("crypto_explorer.api.moralis_api.evm_api.token.get_wallet_token_balances")
+    def test_fetch_erc20_balances_at_block(self, mock_get_wallet_token_balances):
+        """Test explicit ERC-20 balance fetch normalizes decimals correctly"""
+        token_addresses = ["0xusdc", "0xusdt"]
+        mock_get_wallet_token_balances.return_value = [
+            {
+                "token_address": "0xUSDC",
+                "decimals": 6,
+                "balance": "35324444",
+            },
+            {
+                "token_address": "0xUSDT",
+                "decimals": 6,
+                "balance": "1000000",
+            },
+        ]
+
+        result = self.api_client.fetch_erc20_balances_at_block(
+            wallet_address="0x1",
+            token_addresses=token_addresses,
+            block_number=15000000,
+        )
+
+        expected = pd.Series(
+            {
+                "0xusdc": 35.324444,
+                "0xusdt": 1.0,
+            }
+        ).sort_index()
+        result_series = pd.Series(result).sort_index()
+
+        pd.testing.assert_series_equal(result_series, expected)
+
+    @patch("crypto_explorer.api.moralis_api.evm_api.token.get_wallet_token_balances")
+    def test_fetch_erc20_balances_at_block_missing_token_defaults_zero(self, mock_get_wallet_token_balances):
+        """Test explicit ERC-20 fetch defaults missing requested tokens to zero"""
+        token_addresses = ["0xusdc", "0xusdt", "0xwbtc"]
+        mock_get_wallet_token_balances.return_value = [
+            {
+                "token_address": "0xUSDC",
+                "decimals": 6,
+                "balance": "2000000",
+            },
+            {
+                "token_address": "0xWBTC",
+                "decimals": 8,
+                "balance": "79324",
+            },
+        ]
+
+        result = self.api_client.fetch_erc20_balances_at_block(
+            wallet_address="0x1",
+            token_addresses=token_addresses,
+            block_number=15000000,
+        )
+
+        expected = pd.Series(
+            {
+                "0xusdc": 2.0,
+                "0xusdt": 0.0,
+                "0xwbtc": 0.00079324,
+            }
+        ).sort_index()
+        result_series = pd.Series(result).sort_index()
+
+        pd.testing.assert_series_equal(result_series, expected)
+
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_token_price")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_native_balance_at_block")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_erc20_balances_at_block")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_paginated_transactions")
+    def test_get_account_balance_usd_complete_flow(
+        self,
+        mock_fetch_paginated,
+        mock_fetch_erc20,
+        mock_fetch_native,
+        mock_fetch_token_price,
+    ):
+        """Test get_account_balance_usd returns the expected balance history DataFrame"""
+        mock_fetch_paginated.return_value = [
+            {
+                "block_number": "100",
+                "block_timestamp": "2026-05-08T01:34:15Z",
+            },
+            {
+                "block_number": "200",
+                "block_timestamp": "2026-05-09T01:44:47Z",
+            },
+        ]
+        mock_fetch_erc20.side_effect = [
+            {
+                "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 35.324444,
+                "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 0.0,
+                "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 0.00079324,
+            },
+            {
+                "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 33.402804,
+                "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 1.25,
+                "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 0.00081475,
+            },
+        ]
+        mock_fetch_native.side_effect = [1.211409944311478, 1.6656383597491784]
+        mock_fetch_token_price.side_effect = [
+            {"usdPrice": 79406.0599973877},
+            {"usdPrice": 0.1028833487099942},
+            {"usdPrice": 74603.4288543329},
+            {"usdPrice": 0.09040548064709283},
+        ]
+
+        result = self.api_client.get_account_balance_usd(
+            wallet="0x1",
+            from_block=99,
+            include_current_block=False,
+        )
+
+        expected = pd.DataFrame(
+            [
+                {
+                    "height": 100,
+                    "POL": 1.211409944311478,
+                    "USDC": 35.324444,
+                    "USDT": 0.0,
+                    "WBTC": 0.00079324,
+                    "usdPrice": 79406.0599973877,
+                    "polPrice": 0.1028833487099942,
+                    "blockTimestamp": pd.Timestamp("2026-05-08T01:34:15Z"),
+                    "total_usd": 98.31250703232782,
+                    "formatted_total_usd": 98.4371407956835,
+                },
+                {
+                    "height": 200,
+                    "POL": 1.6656383597491784,
+                    "USDC": 33.402804,
+                    "USDT": 1.25,
+                    "WBTC": 0.00081475,
+                    "usdPrice": 74603.4288543329,
+                    "polPrice": 0.09040548064709283,
+                    "blockTimestamp": pd.Timestamp("2026-05-09T01:44:47Z"),
+                    "total_usd": 95.43594765906773,
+                    "formatted_total_usd": 95.58653029512315,
+                },
+            ]
+        ).set_index("height")
+
+        pd.testing.assert_frame_equal(result, expected)
+
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_token_price")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_native_balance_at_block")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_erc20_balances_at_block")
+    @patch("crypto_explorer.api.moralis_api.MoralisAPI.fetch_paginated_transactions")
+    def test_get_account_balance_usd_skips_failed_block(
+        self,
+        mock_fetch_paginated,
+        mock_fetch_erc20,
+        mock_fetch_native,
+        mock_fetch_token_price,
+    ):
+        """Test get_account_balance_usd skips a failing block and keeps valid rows"""
+        mock_fetch_paginated.return_value = [
+            {
+                "block_number": "100",
+                "block_timestamp": "2026-05-08T01:34:15Z",
+            },
+            {
+                "block_number": "200",
+                "block_timestamp": "2026-05-09T01:44:47Z",
+            },
+        ]
+        mock_fetch_erc20.side_effect = [
+            RuntimeError("transient failure"),
+            {
+                "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 35.324444,
+                "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 0.0,
+                "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 0.00079324,
+            },
+        ]
+        mock_fetch_native.return_value = 1.211409944311478
+        mock_fetch_token_price.side_effect = [
+            {"usdPrice": 79406.0599973877},
+            {"usdPrice": 0.1028833487099942},
+        ]
+
+        result = self.api_client.get_account_balance_usd(
+            wallet="0x1",
+            from_block=99,
+            include_current_block=False,
+        )
+
+        expected = pd.DataFrame(
+            [
+                {
+                    "height": 200,
+                    "POL": 1.211409944311478,
+                    "USDC": 35.324444,
+                    "USDT": 0.0,
+                    "WBTC": 0.00079324,
+                    "usdPrice": 79406.0599973877,
+                    "polPrice": 0.1028833487099942,
+                    "blockTimestamp": pd.Timestamp("2026-05-09T01:44:47Z"),
+                    "total_usd": 98.31250703232782,
+                    "formatted_total_usd": 98.4371407956835,
+                },
+            ]
+        ).set_index("height")
+
+        pd.testing.assert_frame_equal(result, expected)
 
     def test_fetch_block_string_type_validation(self):
         """Test fetch_block validates string type correctly"""
